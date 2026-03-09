@@ -67,6 +67,8 @@ graph TD
         UI -->|9. Split-Screen Verification| Admin
     end
 ```
+<img width="1997" height="1361" alt="mermaid-diagram" src="https://github.com/user-attachments/assets/b8938315-7ed1-4d93-ab18-10d7f1ef5294" />
+
 
 ---
 
