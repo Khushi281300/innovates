@@ -7,7 +7,8 @@ export default function SystemStatus() {
   useEffect(() => {
     const checkStatus = async () => {
       try {
-        const res = await fetch("http://localhost:8000/");
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+        const res = await fetch(apiUrl);
         if (res.ok) {
           setStatus(prev => ({ ...prev, backend: "online" }));
         } else {
@@ -74,7 +75,7 @@ export default function SystemStatus() {
       {status.backend !== 'online' && status.backend !== 'checking' && (
         <div className="mt-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-[10px] text-rose-300 font-medium leading-relaxed animate-slide-up">
           <span className="font-black text-rose-500 mr-1">CRITICAL:</span> 
-          Registry connection failed. Ensure the python backend is running on port 8000.
+          Registry connection failed. Ensure the AI Intelligence Engine is active and reachable.
         </div>
       )}
     </div>

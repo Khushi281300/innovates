@@ -23,7 +23,8 @@ export default function Home() {
             formData.append("audio", audioBlob, "query.webm");
         }
 
-        const res = await fetch("http://localhost:8000/api/draft", {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+        const res = await fetch(`${apiUrl}/api/draft`, {
             method: "POST",
             body: formData,
         });
@@ -38,7 +39,7 @@ export default function Home() {
 
     } catch (error) {
         console.error("Submission failed", error);
-        setDraft("❌ Critical Failure: Communication with local AI Engine interrupted. Ensure the backend terminal is active.");
+        setDraft("❌ Critical Failure: Communication with the AI Intelligence Engine interrupted. Ensure the service is active and responsive.");
     } finally {
         setIsProcessing(false);
     }
