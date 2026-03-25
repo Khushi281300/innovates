@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+vectorstore.pkl
+backend_log.txt
+
+# Next.js
+.next/
+node_modules/
+.env.local
+
+# OS
+.DS_Store
+Thumbs.db
