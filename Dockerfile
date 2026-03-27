@@ -1,5 +1,7 @@
 # Use the official Python 3.10 slim image
 FROM python:3.10-slim
+LABEL build_version="1.1.2-zero-torch"
+LABEL build_date="2026-03-27T13:30:00Z"
 
 # Set working directory to the backend directory
 WORKDIR /app
