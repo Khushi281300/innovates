@@ -9,6 +9,8 @@ langchain-community
 langchain-ollama
 langchain-openai
 langchain-text-splitters
+langchain-huggingface
+sentence-transformers
 llama-index
 openai-whisper
 python-multipart

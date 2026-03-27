@@ -35,16 +35,16 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
 
 def get_embeddings_model():
-    """Returns Cloud Embeddings if OpenAI key exists, else Local Ollama"""
+    """Returns Cloud Embeddings if OpenAI key exists, else Local HuggingFace"""
     if OPENAI_API_KEY:
         from langchain_openai import OpenAIEmbeddings
         return OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY)
     else:
-        from langchain_ollama import OllamaEmbeddings
-        return OllamaEmbeddings(model="nomic-embed-text", base_url=OLLAMA_BASE_URL)
+        from langchain_huggingface import HuggingFaceEmbeddings
+        return HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
 
 def get_llm():
-    """Returns Cloud LLM if Groq/OpenAI key exists, else Local Ollama"""
+    """Returns Cloud LLM if Groq/OpenAI key exists, else raises explicit error"""
     if GROQ_API_KEY:
         from langchain_openai import ChatOpenAI
         return ChatOpenAI(
@@ -56,8 +56,7 @@ def get_llm():
         from langchain_openai import ChatOpenAI
         return ChatOpenAI(openai_api_key=OPENAI_API_KEY, model_name="gpt-4o-mini")
     else:
-        from langchain_ollama import ChatOllama
-        return ChatOllama(model="tinydolphin", base_url=OLLAMA_BASE_URL)
+        raise ValueError("Render Error: GROQ_API_KEY or OPENAI_API_KEY must be set in Render environment variables. You cannot use Ollama in the cloud.")
 
 # Use a failsafe pickle-based store instead of Chroma to avoid DLL crashes
 PKL_PATH = "vectorstore.pkl"
@@ -72,7 +71,6 @@ def ingest_document(file_path: str):
     logger.info(f"Ingesting document: {file_path}")
     from langchain_community.document_loaders import PyPDFLoader
     from langchain_text_splitters import RecursiveCharacterTextSplitter
-    from langchain_ollama import OllamaEmbeddings
     
     logger.info("Loading PDF...")
     loader = PyPDFLoader(file_path)
@@ -108,7 +106,6 @@ def generate_draft(query: str):
     logger.info(f"Generating draft for prompt: {query[:50]}...")
     
     try:
-        from langchain_ollama import ChatOllama as Ollama
         # Embeddings import moved to get_embeddings_model
 
         # Load data if exists
