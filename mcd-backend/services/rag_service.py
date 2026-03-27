@@ -34,14 +34,38 @@ GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
 
+class CloudEmbeddings:
+    """Lightweight connector for HuggingFace Inference API"""
+    def __init__(self):
+        self.api_url = "https://api-inference.huggingface.co/models/sentence-transformers/all-MiniLM-L6-v2"
+        # Using a public model that often works without token for low volume
+        self.headers = {} 
+        # Note: In production, user should add HF_TOKEN to Render env
+        hf_token = os.getenv("HF_TOKEN")
+        if hf_token:
+            self.headers = {"Authorization": f"Bearer {hf_token}"}
+
+    def embed_query(self, text: str) -> List[float]:
+        import requests
+        import time
+        for i in range(3): # Retry logic for cold-booted models
+            response = requests.post(self.api_url, headers=self.headers, json={"inputs": text})
+            if response.status_code == 200:
+                return response.json()
+            elif response.status_code == 503: # Model loading
+                time.sleep(5)
+                continue
+            else:
+                raise Exception(f"HF Inference Error: {response.text}")
+        return []
+
 def get_embeddings_model():
-    """Returns Cloud Embeddings if OpenAI key exists, else Local HuggingFace"""
+    """Returns Cloud OpenAI or Cloud HuggingFace"""
     if OPENAI_API_KEY:
         from langchain_openai import OpenAIEmbeddings
         return OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY)
     else:
-        from langchain_huggingface import HuggingFaceEmbeddings
-        return HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+        return CloudEmbeddings()
 
 def get_llm():
     """Returns Cloud LLM if Groq/OpenAI key exists, else raises explicit error"""

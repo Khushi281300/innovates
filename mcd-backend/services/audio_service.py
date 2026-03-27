@@ -1,48 +1,35 @@
 import sys
-from unittest.mock import MagicMock
+import os
+import requests
 
-# Global mock for torch to bypass DLL initialization errors
-if "torch" not in sys.modules:
-    import importlib.util
-    class MockClass: pass
-    mock_torch = MagicMock()
-    mock_torch.__version__ = "2.0.0"
-    mock_torch.__spec__ = importlib.util.spec_from_loader("torch", None)
-    
-    mock_nn = MagicMock()
-    mock_nn.Module = MockClass
-    mock_torch.nn = mock_nn
-    mock_torch.Tensor = MockClass
-    
-    sys.modules["torch"] = mock_torch
-    sys.modules["torch.nn"] = mock_nn
-    sys.modules["torch.nn.functional"] = MagicMock()
-    sys.modules["torch.distributed"] = MagicMock()
-    sys.modules["torch.distributions"] = MagicMock()
-    sys.modules["torch.jit"] = MagicMock()
-    sys.modules["torch.utils"] = MagicMock()
-    sys.modules["torch.utils.data"] = MagicMock()
-    sys.modules["torch.serialization"] = MagicMock()
-
-try:
-    import whisper
-    HAS_WHISPER = True
-except Exception as e:
-    print(f"Whisper/Torch load failed: {e}. Falling back to mock transcription.")
-    HAS_WHISPER = False
+# The torch mock is removed as per instructions.
+# The whisper import and HAS_WHISPER variable are removed as per instructions.
 
 def transcribe_audio(audio_path: str) -> str:
     """
-    Audio transcription service using OpenAI Whisper with a mock fallback.
+    Cloud transcription using Groq API (High Performance).
     """
-    if not HAS_WHISPER:
-        return "[Mock Transcription: Zonal property tax complaint detected (Whisper load failed on this machine)]"
-        
+    api_key = os.getenv("GROQ_API_KEY")
+    if not api_key:
+        return "[Audio Processing Skipped: No GROQ_API_KEY set on Render]"
+
     try:
-        print(f"Loading Whisper 'base' model and transcribing {audio_path}...")
-        model = whisper.load_model("base")
-        result = model.transcribe(audio_path)
-        return result.get("text", "[Transcription failed: No text returned]")
+        url = "https://api.groq.com/openai/v1/audio/transcriptions"
+        headers = {"Authorization": f"Bearer {api_key}"}
+        
+        with open(audio_path, "rb") as f:
+            files = {
+                "file": (os.path.basename(audio_path), f),
+                "model": (None, "whisper-large-v3"),
+                "language": (None, "en"),
+                "response_format": (None, "json"),
+            }
+            response = requests.post(url, headers=headers, files=files)
+            
+        if response.status_code == 200:
+            return response.json().get("text", "")
+        else:
+            return f"[Transcription API Error: {response.text}]"
+            
     except Exception as e:
-        print(f"Whisper transcription error: {str(e)}")
-        return f"[Transcription error: {str(e)}]"
+        return f"[Cloud Transcription failed: {str(e)}]"
