@@ -11,6 +11,8 @@ langchain-openai
 langchain-text-splitters
 langchain-huggingface
 sentence-transformers
+sentencepiece
+transformers
 llama-index
 openai-whisper
 python-multipart
