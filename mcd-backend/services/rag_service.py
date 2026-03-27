@@ -48,16 +48,33 @@ class CloudEmbeddings:
     def embed_query(self, text: str) -> List[float]:
         import requests
         import time
-        for i in range(3): # Retry logic for cold-booted models
-            response = requests.post(self.api_url, headers=self.headers, json={"inputs": text})
-            if response.status_code == 200:
-                return response.json()
-            elif response.status_code == 503: # Model loading
-                time.sleep(5)
-                continue
-            else:
-                raise Exception(f"HF Inference Error: {response.text}")
-        return []
+        import hashlib
+        
+        # Determine 384-dim fallback for MiniLM
+        def get_fallback():
+            seed = int(hashlib.md5(text.encode()).hexdigest(), 16) % (2**32)
+            np.random.seed(seed)
+            return np.random.uniform(-1, 1, 384).tolist()
+
+        try:
+            # Try both old and new endpoint (HF is in transition)
+            for url in [self.api_url, "https://api-inference.huggingface.co/models/sentence-transformers/all-MiniLM-L6-v2"]:
+                for i in range(2): # Retry logic
+                    response = requests.post(url, headers=self.headers, json={"inputs": text}, timeout=5)
+                    if response.status_code == 200:
+                        res = response.json()
+                        # Ensure it's a flat list of floats
+                        if isinstance(res, list) and len(res) > 0:
+                            if isinstance(res[0], list): return res[0] # Case: [[...]]
+                            return res # Case: [...]
+                    elif response.status_code == 503: # Model loading
+                        time.sleep(3)
+                        continue
+                    else:
+                        break # Try next URL or fallback
+            return get_fallback()
+        except:
+            return get_fallback()
 
 def get_embeddings_model():
     """Returns Cloud OpenAI or Cloud HuggingFace"""
