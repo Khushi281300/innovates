@@ -5,7 +5,7 @@ import sys
 from unittest.mock import MagicMock
 
 # Global mock for torch to bypass DLL initialization errors
-if "torch" not in sys.modules:
+if "torch" not in sys.modules and os.name == 'nt':
     import importlib.util
     class MockClass: pass
     mock_torch = MagicMock()

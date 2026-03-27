@@ -5,7 +5,7 @@ import numpy as np
 from unittest.mock import MagicMock
 
 # Define a global mock for torch to prevent DLL initialization errors
-if "torch" not in sys.modules:
+if "torch" not in sys.modules and os.name == 'nt':
     import importlib.util
     class MockClass: pass
     mock_torch = MagicMock()
