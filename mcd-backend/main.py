@@ -38,7 +38,7 @@ app.add_middleware(
 @app.get("/")
 def read_root():
     logger.info("Root endpoint called - Health Check")
-    return {"status": "MCD AI Copilot Backend is running"}
+    return {"status": "MCD AI Copilot Backend is running - ZERO TORCH V1.1"}
 
 @app.post("/api/ingest")
 async def api_ingest(file: UploadFile = File(...)):
