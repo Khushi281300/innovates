@@ -6,6 +6,9 @@ uvicorn
 chromadb
 langchain
 langchain-community
+langchain-ollama
+langchain-openai
+langchain-text-splitters
 llama-index
 openai-whisper
 python-multipart
