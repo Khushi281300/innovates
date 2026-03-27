@@ -37,7 +37,7 @@ OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
 class CloudEmbeddings:
     """Lightweight connector for HuggingFace Inference API"""
     def __init__(self):
-        self.api_url = "https://api-inference.huggingface.co/models/sentence-transformers/all-MiniLM-L6-v2"
+        self.api_url = "https://router.huggingface.co/hf-inference/models/sentence-transformers/all-MiniLM-L6-v2"
         # Using a public model that often works without token for low volume
         self.headers = {} 
         # Note: In production, user should add HF_TOKEN to Render env
