@@ -5,6 +5,7 @@ fastapi
 uvicorn
 chromadb
 langchain
+langchain-community
 llama-index
 openai-whisper
 python-multipart
